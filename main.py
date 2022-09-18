@@ -31,7 +31,7 @@ def wechatNotice(SCKey, message):
 
 
 # 获取本地 SESSIONID
-def daka(sendkey, browser):
+def daka(browser):
     # 相关参数定义
     un = os.environ["SCHOOL_ID"].strip()  # 学号
     pd = os.environ["PASSWORD"].strip()  # 数字杭电密码
