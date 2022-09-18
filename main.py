@@ -38,22 +38,24 @@ def send(sessionid):
         try:
             res = requests.post(url, json=data, headers=headers, timeout=30)
             if res.status_code == 200:
-                return '打卡成功'
+                return "打卡成功"
             else:
-                print("打卡失败")
-                wechatNotice(os.environ["SCKEY"], "打卡失败")
+                print(res.status_code + "打卡失败")
         except Exception as e:
             print(e.__class__.__name__, end='\t')
             if retryCnt < 2:
                 print("打卡失败，正在重试")
                 time.sleep(3)
             else:
-                print("打卡失败")
                 wechatNotice(os.environ["SCKEY"], "打卡失败")
+                return "打卡失败"
+    wechatNotice(os.environ["SCKEY"], "打卡失败")
+    return "打卡失败"
 
 
 # 获取本地 SESSIONID
 def punch(browser):
+
     # 相关参数定义
     un = os.environ["SCHOOL_ID"].strip()  # 学号
     pd = os.environ["PASSWORD"].strip()  # 密码
@@ -77,7 +79,8 @@ def punch(browser):
         browser.get("https://skl.hduhelp.com/passcard.html#/passcard")
         sessionId = browser.execute_script("return window.localStorage.getItem('sessionId')")
         time.sleep(5)
-        send(sessionId)
+        
+        print(send(sessionId))
 
     # 退出窗口
     browser.quit()
