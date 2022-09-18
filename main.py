@@ -77,9 +77,9 @@ def punch(browser):
             wechatNotice(os.environ["SCKEY"], un + "帐号登录失败")
     else:
         browser.get("https://skl.hduhelp.com/passcard.html#/passcard")
-        sessionId = browser.execute_script("return window.localStorage.getItem('sessionId')")
         time.sleep(5)
 
+        sessionId = browser.execute_script("return window.localStorage.getItem('sessionId')")
         print(send(sessionId))
 
     # 退出窗口
