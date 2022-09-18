@@ -46,6 +46,7 @@ def punch(browser):
 
     # 登录账户
     try:
+        browser.get("https://cas.hdu.edu.cn/cas/login")
         browser.find_element(By.ID, 'un').clear()
         browser.find_element(By.ID, 'un').send_keys(un)  # 传送帐号
         browser.find_element(By.ID, 'pd').clear()
