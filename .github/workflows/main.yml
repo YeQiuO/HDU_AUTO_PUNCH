@@ -34,4 +34,5 @@ jobs:
         env:
           SCHOOL_ID: ${{ secrets.SCHOOL_ID }}
           PASSWORD: ${{ secrets.PASSWORD }}
+          SCKEY: ${{ secrets.SCKEY }}
         run: python main.py
