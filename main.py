@@ -3,9 +3,12 @@ import time
 
 import requests
 from selenium import webdriver
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.wait import WebDriverWait
 
 chrome_options = Options()
 chrome_options.add_argument('--headless')
@@ -38,50 +41,45 @@ def send(sessionid):
             res = requests.post(url, json=data, headers=headers, timeout=30)
             if res.status_code == 200:
                 return "打卡成功"
-            else:
-                print(res.status_code + "打卡失败")
         except Exception as e:
-            print(e.__class__.__name__, end='\t')
             if retryCnt < 2:
-                print("打卡失败，正在重试")
+                print(e.__class__.__name__ + "打卡失败，正在重试")
                 time.sleep(3)
-            else:
-                wechatNotice(os.environ["SCKEY"], "打卡失败")
-                return "打卡失败"
-    wechatNotice(os.environ["SCKEY"], "打卡失败")
-    return "打卡失败"
+        finally:
+            wechatNotice(os.environ["SCKEY"], "打卡失败")
+            return "打卡失败"
 
 
 # 获取本地 SESSIONID
 def punch(browser):
-
     # 相关参数定义
     un = os.environ["SCHOOL_ID"].strip()  # 学号
     pd = os.environ["PASSWORD"].strip()  # 密码
 
-    # 登录账户
     try:
         browser.get("https://cas.hdu.edu.cn/cas/login")
+        wait.until(EC.presence_of_element_located((By.ID, "un")))
+        wait.until(EC.presence_of_element_located((By.ID, "pd")))
+        wait.until(EC.presence_of_element_located((By.ID, "index_login_btn")))
         browser.find_element(By.ID, 'un').clear()
         browser.find_element(By.ID, 'un').send_keys(un)  # 传送帐号
         browser.find_element(By.ID, 'pd').clear()
         browser.find_element(By.ID, 'pd').send_keys(pd)  # 输入密码
         browser.find_element(By.ID, 'index_login_btn').click()
+        wait.until(EC.presence_of_element_located((By.ID, "errormsg")))
+    except TimeoutException as e:
+        browser.get("https://skl.hduhelp.com/passcard.html#/passcard")
+        for retryCnt in range(10):
+            time.sleep(1)
+            sessionId = browser.execute_script("return window.localStorage.getItem('sessionId')")
+            if sessionId is not None:
+                break
+        print(send(sessionId))
     except Exception as e:
-        print(e.__class__, "无法访问数字杭电")
-
-    if len(browser.find_elements(By.ID, "errormsg")):
-        print("帐号登录失败")
+        print(e.__class__.__name__ + "帐号登录失败")
         if os.environ["SCKEY"] != '':
             wechatNotice(os.environ["SCKEY"], un + "帐号登录失败")
-    else:
-        browser.get("https://skl.hduhelp.com/passcard.html#/passcard")
-        time.sleep(5)
 
-        sessionId = browser.execute_script("return window.localStorage.getItem('sessionId')")
-        print(send(sessionId))
-
-    # 退出窗口
     browser.quit()
 
 
@@ -103,6 +101,6 @@ def wechatNotice(SCKey, message):
 
 if __name__ == '__main__':
     driver = webdriver.Chrome(service=Service('/usr/bin/chromedriver'), options=chrome_options)
-    driver.implicitly_wait(5)
+    wait = WebDriverWait(driver, 3, 0.5)
 
-    punch(driver)
+    punch(driver, wait)
