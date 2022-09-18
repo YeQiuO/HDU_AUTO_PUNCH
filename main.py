@@ -6,23 +6,27 @@ import os
 
 from selenium.common.exceptions import NoSuchElementException
 
-
 chrome_options = Options()
 chrome_options.add_argument('--headless')
 chrome_options.add_argument('--no-sandbox')
 chrome_options.add_argument('--disable-dev-shm-usage')
 
-# serverchan函数
-def serverchan(sendkey, msg, browser):
-    if sendkey == '0':
-        pass
-    else:
-        # serverchan消息推送 https://sctapi.ftqq.com/****************.send?title=messagetitle
-        url = "https://sctapi.ftqq.com/" + str(sendkey) + ".send?title=" + str(msg)
-        browser.get(url)
-        time.sleep(3)
-        # 退出窗口
-        browser.quit()
+
+def wechatNotice(SCKey, message):
+    print(message)
+    url = 'https://sctapi.ftqq.com/{0}.send'.format(SCKey)
+    print(url)
+    data = {
+        'title': message,
+    }
+    try:
+        r = requests.post(url, data=data)
+        if r.json()["data"]["error"] == 'SUCCESS':
+            print("微信通知成功")
+        else:
+            print("微信通知失败")
+    except Exception as e:
+        print(e.__class__, "推送服务配置错误")
 
 
 # 获取本地 SESSIONID
@@ -32,8 +36,6 @@ def daka(sendkey, browser):
     pd = os.environ["PASSWORD"].strip()  # 数字杭电密码
     # 访问数字杭电
     browser.get("https://cas.hdu.edu.cn/cas/login")
-    # 窗口最大化
-    browser.maximize_window()
     time.sleep(2)
     # 登录账户
     browser.find_element_by_id('un').clear()
@@ -42,23 +44,25 @@ def daka(sendkey, browser):
     browser.find_element_by_id('pd').send_keys(pd)  # 输入密码
     browser.find_element_by_id('index_login_btn').click()
     time.sleep(3)
+
     try:
         flag = browser.find_element_by_id('errormsg').is_enabled()
     except NoSuchElementException:
         flag = False
-    if flag == True:
+
+    if flag:
         print(un + "帐号登录失败")
-        serverchan(sendkey, un + "帐号登录失败")
-        browser.quit()  # 帐号登录失败
+        if os.environ["SCKEY"] != '':
+            wechatNotice(os.environ["SCKEY"], un + "帐号登录失败")
+        browser.quit()
     else:
-        # 访问打卡界面
+        # 获取 sessionId
         browser.get("https://skl.hduhelp.com/passcard.html#/passcard")
-        print("正在执行" + un + "操作")
         time.sleep(10)
         sessionId = browser.execute_script("return window.localStorage.getItem('sessionId')")
-        print(sessionId)
-        # 退出窗口
         browser.quit()
+
+        # 调用打卡接口
         punch(sessionId)
 
 
@@ -87,9 +91,6 @@ def punch(sessionid):
     else:
         print("打卡失败")
 
+
 if __name__ == '__main__':
-    # ServerChan发送key，0表示不启用推送
-    sendkey = '0'
-    browser = webdriver.Chrome('/usr/bin/chromedriver', options=chrome_options)
-    daka(sendkey, browser)
-    time.sleep(3)
+    daka(webdriver.Chrome('/usr/bin/chromedriver', options=chrome_options))
