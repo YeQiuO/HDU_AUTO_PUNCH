@@ -33,7 +33,6 @@ def send(sessionid):
         "last14days": 0
     }
 
-    print(headers)
     for retryCnt in range(3):
         try:
             res = requests.post(url, json=data, headers=headers, timeout=30)
