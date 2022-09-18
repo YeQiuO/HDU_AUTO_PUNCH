@@ -3,8 +3,9 @@ import time
 
 import requests
 from selenium import webdriver
-from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
 
 chrome_options = Options()
 chrome_options.add_argument('--headless')
@@ -12,63 +13,8 @@ chrome_options.add_argument('--no-sandbox')
 chrome_options.add_argument('--disable-dev-shm-usage')
 
 
-# 打卡失败微信提示
-def wechatNotice(SCKey, message):
-    print(message)
-    url = 'https://sctapi.ftqq.com/{0}.send'.format(SCKey)
-    print(url)
-    data = {
-        'title': message,
-    }
-    try:
-        r = requests.post(url, data=data)
-        if r.json()["data"]["error"] == 'SUCCESS':
-            print("微信通知成功")
-        else:
-            print("微信通知失败")
-    except Exception as e:
-        print(e.__class__, "推送服务配置错误")
-
-
-# 获取本地 SESSIONID
-def daka(browser):
-    # 相关参数定义
-    un = os.environ["SCHOOL_ID"].strip()  # 学号
-    pd = os.environ["PASSWORD"].strip()  # 数字杭电密码
-    # 访问数字杭电
-    browser.get("https://cas.hdu.edu.cn/cas/login")
-    time.sleep(2)
-    # 登录账户
-    browser.find_element_by_id('un').clear()
-    browser.find_element_by_id('un').send_keys(un)  # 传送帐号
-    browser.find_element_by_id('pd').clear()
-    browser.find_element_by_id('pd').send_keys(pd)  # 输入密码
-    browser.find_element_by_id('index_login_btn').click()
-    time.sleep(3)
-
-    try:
-        flag = browser.find_element_by_id('errormsg').is_enabled()
-    except NoSuchElementException:
-        flag = False
-
-    if flag:
-        print(un + "帐号登录失败")
-        if os.environ["SCKEY"] != '':
-            wechatNotice(os.environ["SCKEY"], un + "帐号登录失败")
-        browser.quit()
-    else:
-        # 获取 sessionId
-        browser.get("https://skl.hduhelp.com/passcard.html#/passcard")
-        time.sleep(10)
-        sessionId = browser.execute_script("return window.localStorage.getItem('sessionId')")
-        browser.quit()
-
-        # 调用打卡接口
-        punch(sessionId)
-
-
 # 执行打卡
-def punch(sessionid):
+def send(sessionid):
     headers = {
         'Content-Type': 'application/json',
         'X-Auth-Token': sessionid,
@@ -86,13 +32,77 @@ def punch(sessionid):
         "currentLiving": 0,
         "last14days": 0
     }
-    r = requests.post(url, json=data, headers=headers, timeout=30)
-    if r.status_code == 200:
-        print("打卡成功")
+
+    for retryCnt in range(3):
+        try:
+            res = requests.post(url, json=data, headers=headers, timeout=30)
+            if res.status_code == 200:
+                return "打卡成功"
+            else:
+                print(res.status_code + "打卡失败")
+        except Exception as e:
+            print(e.__class__.__name__, end='\t')
+            if retryCnt < 2:
+                print("打卡失败，正在重试")
+                time.sleep(3)
+            else:
+                wechatNotice(os.environ["SCKEY"], "打卡失败")
+                return "打卡失败"
+    wechatNotice(os.environ["SCKEY"], "打卡失败")
+    return "打卡失败"
+
+
+# 获取本地 SESSIONID
+def punch(browser):
+
+    # 相关参数定义
+    un = os.environ["SCHOOL_ID"].strip()  # 学号
+    pd = os.environ["PASSWORD"].strip()  # 密码
+
+    # 登录账户
+    try:
+        browser.get("https://cas.hdu.edu.cn/cas/login")
+        browser.find_element(By.ID, 'un').clear()
+        browser.find_element(By.ID, 'un').send_keys(un)  # 传送帐号
+        browser.find_element(By.ID, 'pd').clear()
+        browser.find_element(By.ID, 'pd').send_keys(pd)  # 输入密码
+        browser.find_element(By.ID, 'index_login_btn').click()
+    except Exception as e:
+        print(e.__class__, "无法访问数字杭电")
+
+    if len(browser.find_elements(By.ID, "errormsg")):
+        print("帐号登录失败")
+        if os.environ["SCKEY"] != '':
+            wechatNotice(os.environ["SCKEY"], un + "帐号登录失败")
     else:
-        print("打卡失败")
-        wechatNotice(os.environ["SCKEY"], "打卡失败")
+        browser.get("https://skl.hduhelp.com/passcard.html#/passcard")
+        time.sleep(5)
+
+        sessionId = browser.execute_script("return window.localStorage.getItem('sessionId')")
+        print(send(sessionId))
+
+    # 退出窗口
+    browser.quit()
+
+
+# 打卡失败微信提示
+def wechatNotice(SCKey, message):
+    url = 'https://sctapi.ftqq.com/{0}.send'.format(SCKey)
+    data = {
+        'title': message,
+    }
+    try:
+        r = requests.post(url, data=data)
+        if r.json()["data"]["error"] == 'SUCCESS':
+            print("微信通知成功")
+        else:
+            print("微信通知失败")
+    except Exception as e:
+        print(e.__class__, "推送服务配置错误")
 
 
 if __name__ == '__main__':
-    daka(webdriver.Chrome('/usr/bin/chromedriver', options=chrome_options))
+    driver = webdriver.Chrome(service=Service('/usr/bin/chromedriver'), options=chrome_options)
+    driver.implicitly_wait(5)
+
+    punch(driver)
