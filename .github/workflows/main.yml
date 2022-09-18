@@ -1,4 +1,4 @@
-name: ZUCC Auto Check
+name: HDU Auto Punch
 
 on:
   workflow_dispatch:
@@ -31,4 +31,7 @@ jobs:
             && sudo chmod +x /usr/local/bin/chromedriver \
             && chromedriver --version
       - name: Auto Check
+        env:
+          SCHOOL_ID: ${{ secrets.SCHOOL_ID }}
+          PASSWORD: ${{ secrets.PASSWORD }}
         run: python main.py
