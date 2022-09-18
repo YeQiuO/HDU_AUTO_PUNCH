@@ -30,7 +30,7 @@ def send(sessionid):
         "currentLiving": 0,
         "last14days": 0
     }
-    r = requests.post(url, json=data, headers=headers, timeout=30)
+    r = requests.post(url, json=data, headers=headers, timeout=30, verify=False)
     if r.status_code == 200:
         print("打卡成功")
     else:
@@ -55,7 +55,7 @@ def punch(browser):
     except Exception as e:
         print(e.__class__, "无法访问数字杭电")
 
-    if browser.find_element(By.ID, "errormsg"):
+    if len(browser.find_elements(By.ID, "errormsg")):
         print("帐号登录失败")
         if os.environ["SCKEY"] != '':
             wechatNotice(os.environ["SCKEY"], un + "帐号登录失败")
