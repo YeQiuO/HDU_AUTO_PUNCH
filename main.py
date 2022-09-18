@@ -55,8 +55,8 @@ def punch(browser):
     except Exception as e:
         print(e.__class__, "无法访问数字杭电")
 
-    if browser.findElements(By.id("errormsg")).size():
-        print(un + "帐号登录失败")
+    if len(browser.find_elements_by_id("errormsg")):
+        print("帐号登录失败")
         if os.environ["SCKEY"] != '':
             wechatNotice(os.environ["SCKEY"], un + "帐号登录失败")
         # 帐号登录失败
