@@ -77,7 +77,6 @@ def punch(browser, wait):
             time.sleep(1)
             sessionId = browser.execute_script("return window.localStorage.getItem('sessionId')")
             if sessionId is not None and sessionId != '':
-                print(sessionId)
                 break
         print(send(sessionId))
     except Exception as e:
