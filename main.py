@@ -3,6 +3,7 @@ import os
 import requests
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 
 chrome_options = Options()
@@ -30,7 +31,7 @@ def send(sessionid):
         "currentLiving": 0,
         "last14days": 0
     }
-    r = requests.post(url, json=data, headers=headers, timeout=30, verify=False)
+    r = requests.post(url, json=data, headers=headers, timeout=30)
     if r.status_code == 200:
         print("打卡成功")
     else:
@@ -85,7 +86,7 @@ def wechatNotice(SCKey, message):
 
 
 if __name__ == '__main__':
-    driver = webdriver.Chrome('/usr/bin/chromedriver', options=chrome_options)
+    driver = webdriver.Chrome(service=Service('/usr/bin/chromedriver'), options=chrome_options)
     driver.implicitly_wait(9)
 
     punch(driver)
