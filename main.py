@@ -51,7 +51,7 @@ def send(sessionid):
 
 
 # 获取本地 SESSIONID
-def punch(browser):
+def punch(browser, wait):
     # 相关参数定义
     un = os.environ["SCHOOL_ID"].strip()  # 学号
     pd = os.environ["PASSWORD"].strip()  # 密码
