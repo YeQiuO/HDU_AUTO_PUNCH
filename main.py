@@ -1,10 +1,10 @@
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-import time
-import requests
 import os
+import time
 
+import requests
+from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.chrome.options import Options
 
 chrome_options = Options()
 chrome_options.add_argument('--headless')
@@ -12,6 +12,7 @@ chrome_options.add_argument('--no-sandbox')
 chrome_options.add_argument('--disable-dev-shm-usage')
 
 
+# 打卡失败微信提示
 def wechatNotice(SCKey, message):
     print(message)
     url = 'https://sctapi.ftqq.com/{0}.send'.format(SCKey)
@@ -90,6 +91,7 @@ def punch(sessionid):
         print("打卡成功")
     else:
         print("打卡失败")
+        wechatNotice(os.environ["SCKEY"], "打卡失败")
 
 
 if __name__ == '__main__':
