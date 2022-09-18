@@ -11,6 +11,7 @@ chrome_options.add_argument('--headless')
 chrome_options.add_argument('--no-sandbox')
 chrome_options.add_argument('--disable-dev-shm-usage')
 
+driverfile_path = r'D:\Document\DevelopmentTools\edgedriver_win64\msedgedriver.exe'
 
 # 执行打卡
 def send(sessionid):
@@ -63,6 +64,7 @@ def punch(browser):
     else:
         browser.get("https://skl.hduhelp.com/passcard.html#/passcard")
         sessionId = browser.execute_script("return window.localStorage.getItem('sessionId')")
+        time.sleep(5)
         send(sessionId)
 
     # 退出窗口
@@ -87,6 +89,6 @@ def wechatNotice(SCKey, message):
 
 if __name__ == '__main__':
     driver = webdriver.Chrome(service=Service('/usr/bin/chromedriver'), options=chrome_options)
-    driver.implicitly_wait(9)
+    driver.implicitly_wait(5)
 
     punch(driver)
