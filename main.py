@@ -41,13 +41,17 @@ def send(sessionid):
             res = requests.post(url, json=data, headers=headers, timeout=30)
             if res.status_code == 200:
                 return "打卡成功"
+            else:
+                print("打卡失败")
+                wechatNotice(os.environ["SCKEY"], "打卡失败")
         except Exception as e:
+            print(e.__class__.__name__, end='\t')
             if retryCnt < 2:
-                print(e.__class__.__name__ + "打卡失败，正在重试")
+                print("打卡失败，正在重试")
                 time.sleep(3)
-        finally:
-            wechatNotice(os.environ["SCKEY"], "打卡失败")
-            return "打卡失败"
+            else:
+                print("打卡失败")
+                wechatNotice(os.environ["SCKEY"], "打卡失败")
 
 
 # 获取本地 SESSIONID
@@ -72,7 +76,8 @@ def punch(browser, wait):
         for retryCnt in range(10):
             time.sleep(1)
             sessionId = browser.execute_script("return window.localStorage.getItem('sessionId')")
-            if sessionId is not None:
+            if sessionId is not None and sessionId != '':
+                print(sessionId)
                 break
         print(send(sessionId))
     except Exception as e:
