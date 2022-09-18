@@ -46,22 +46,19 @@ def punch(browser):
 
     # 登录账户
     try:
-        browser.get("https://cas.hdu.edu.cn/cas/login")
-        browser.find_element_by_id('un').clear()
-        browser.find_element_by_id('un').send_keys(un)  # 传送帐号
-        browser.find_element_by_id('pd').clear()
-        browser.find_element_by_id('pd').send_keys(pd)  # 输入密码
-        browser.find_element_by_id('index_login_btn').click()
+        browser.find_element(By.ID, 'un').clear()
+        browser.find_element(By.ID, 'un').send_keys(un)  # 传送帐号
+        browser.find_element(By.ID, 'pd').clear()
+        browser.find_element(By.ID, 'pd').send_keys(pd)  # 输入密码
+        browser.find_element(By.ID, 'index_login_btn').click()
     except Exception as e:
         print(e.__class__, "无法访问数字杭电")
 
-    if len(browser.find_elements_by_id("errormsg")):
+    if browser.find_element(By.ID, "errormsg"):
         print("帐号登录失败")
         if os.environ["SCKEY"] != '':
             wechatNotice(os.environ["SCKEY"], un + "帐号登录失败")
-        # 帐号登录失败
     else:
-        # 访问打卡界面
         browser.get("https://skl.hduhelp.com/passcard.html#/passcard")
         sessionId = browser.execute_script("return window.localStorage.getItem('sessionId')")
         send(sessionId)
