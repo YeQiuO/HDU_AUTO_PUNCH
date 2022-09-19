@@ -76,6 +76,8 @@ def punch(browser, wait):
 
     try:
         wait.until(EC.presence_of_element_located((By.ID, "errormsg")))
+        print("帐号登录失败")
+        wechatNotice(os.environ["SCKEY"], un + "帐号登录失败")
     except TimeoutException as e:
         browser.get("https://skl.hduhelp.com/passcard.html#/passcard")
         for retryCnt in range(10):
@@ -84,9 +86,6 @@ def punch(browser, wait):
             if sessionId is not None and sessionId != '':
                 break
         print(send(sessionId))
-    except Exception as e:
-        print(e.__class__.__name__ + "帐号登录失败")
-        wechatNotice(os.environ["SCKEY"], un + "帐号登录失败")
     finally:
         browser.quit()
 
