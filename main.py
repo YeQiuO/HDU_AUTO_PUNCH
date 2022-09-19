@@ -1,4 +1,5 @@
 import os
+import sys
 import time
 
 import requests
@@ -41,13 +42,12 @@ def send(sessionid):
             res = requests.post(url, json=data, headers=headers, timeout=30)
             if res.status_code == 200:
                 return "打卡成功"
-            else:
-                print("打卡失败")
+            elif retryCnt == 3:
+                print("提交表单失败")
                 wechatNotice(os.environ["SCKEY"], "打卡失败")
         except Exception as e:
-            print(e.__class__.__name__, end='\t')
             if retryCnt < 2:
-                print("打卡失败，正在重试")
+                print(e.__class__.__name__ + "打卡失败，正在重试")
                 time.sleep(3)
             else:
                 print("打卡失败")
@@ -56,7 +56,6 @@ def send(sessionid):
 
 # 获取本地 SESSIONID
 def punch(browser, wait):
-    # 相关参数定义
     un = os.environ["SCHOOL_ID"].strip()  # 学号
     pd = os.environ["PASSWORD"].strip()  # 密码
 
@@ -70,6 +69,12 @@ def punch(browser, wait):
         browser.find_element(By.ID, 'pd').clear()
         browser.find_element(By.ID, 'pd').send_keys(pd)  # 输入密码
         browser.find_element(By.ID, 'index_login_btn').click()
+    except TimeoutException as e:
+        print(e.__class__.__name__ + "无法访问数字杭电")
+        wechatNotice(os.environ["SCKEY"], "无法访问数字杭电")
+        sys.exit(1)
+
+    try:
         wait.until(EC.presence_of_element_located((By.ID, "errormsg")))
     except TimeoutException as e:
         browser.get("https://skl.hduhelp.com/passcard.html#/passcard")
@@ -81,26 +86,26 @@ def punch(browser, wait):
         print(send(sessionId))
     except Exception as e:
         print(e.__class__.__name__ + "帐号登录失败")
-        if os.environ["SCKEY"] != '':
-            wechatNotice(os.environ["SCKEY"], un + "帐号登录失败")
-
-    browser.quit()
+        wechatNotice(os.environ["SCKEY"], un + "帐号登录失败")
+    finally:
+        browser.quit()
 
 
 # 打卡失败微信提示
 def wechatNotice(SCKey, message):
-    url = 'https://sctapi.ftqq.com/{0}.send'.format(SCKey)
-    data = {
-        'title': message,
-    }
-    try:
-        r = requests.post(url, data=data)
-        if r.json()["data"]["error"] == 'SUCCESS':
-            print("微信通知成功")
-        else:
-            print("微信通知失败")
-    except Exception as e:
-        print(e.__class__, "推送服务配置错误")
+    if os.environ["SCKEY"] != '':
+        url = 'https://sctapi.ftqq.com/{0}.send'.format(SCKey)
+        data = {
+            'title': message,
+        }
+        try:
+            r = requests.post(url, data=data)
+            if r.json()["data"]["error"] == 'SUCCESS':
+                print("微信通知成功")
+            else:
+                print("微信通知失败")
+        except Exception as e:
+            print(e.__class__, "推送服务配置错误")
 
 
 if __name__ == '__main__':
