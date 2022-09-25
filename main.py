@@ -69,7 +69,7 @@ def punch(browser, wait):
         browser.find_element(By.ID, 'pd').clear()
         browser.find_element(By.ID, 'pd').send_keys(pd)  # 输入密码
         browser.find_element(By.ID, 'index_login_btn').click()
-    except TimeoutException as e:
+    except Exception as e:
         print(e.__class__.__name__ + "无法访问数字杭电")
         wechatNotice(os.environ["SCKEY"], "无法访问数字杭电")
         sys.exit(1)

@@ -3,7 +3,7 @@ name: HDU Auto Punch
 on:
   workflow_dispatch:
   schedule:
-    - cron: '30 16 * * *'
+    - cron: '30 23 * * *'
 
 jobs:
   bot:
