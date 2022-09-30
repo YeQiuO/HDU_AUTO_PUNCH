@@ -29,7 +29,9 @@ class Punch:
         pd = os.environ["PASSWORD"].strip()  # 密码
 
         try:
+            print(self.driver)
             browser.get("https://cas.hdu.edu.cn/cas/login")
+            print(self.driver)
             self.wait.until(EC.presence_of_element_located((By.ID, "un")))
             self.wait.until(EC.presence_of_element_located((By.ID, "pd")))
             self.wait.until(EC.presence_of_element_located((By.ID, "index_login_btn")))
