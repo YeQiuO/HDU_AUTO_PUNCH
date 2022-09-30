@@ -25,15 +25,14 @@ class Punch:
     # 获取本地 SESSIONID
     def login(self):
         browser = self.driver
-        wait = self.wait
         un = os.environ["SCHOOL_ID"].strip()  # 学号
         pd = os.environ["PASSWORD"].strip()  # 密码
 
         try:
             browser.get("https://cas.hdu.edu.cn/cas/login")
-            wait.until(EC.presence_of_element_located((By.ID, "un")))
-            wait.until(EC.presence_of_element_located((By.ID, "pd")))
-            wait.until(EC.presence_of_element_located((By.ID, "index_login_btn")))
+            self.wait.until(EC.presence_of_element_located((By.ID, "un")))
+            self.wait.until(EC.presence_of_element_located((By.ID, "pd")))
+            self.wait.until(EC.presence_of_element_located((By.ID, "index_login_btn")))
             browser.find_element(By.ID, 'un').clear()
             browser.find_element(By.ID, 'un').send_keys(un)  # 传送帐号
             browser.find_element(By.ID, 'pd').clear()
@@ -45,7 +44,7 @@ class Punch:
             sys.exit(1)
 
         try:
-            wait.until(EC.presence_of_element_located((By.ID, "errormsg")))
+            self.wait.until(EC.presence_of_element_located((By.ID, "errormsg")))
             print("帐号登录失败")
             self.wechatNotice(os.environ["SCKEY"], un + "帐号登录失败")
         except TimeoutException as e:
@@ -113,7 +112,5 @@ class Punch:
 
 
 if __name__ == '__main__':
-
     punch = Punch()
     punch.login()
-
