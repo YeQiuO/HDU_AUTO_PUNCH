@@ -29,17 +29,15 @@ class Punch:
         pd = os.environ["PASSWORD"].strip()  # 密码
 
         try:
-            print(self.driver)
-            browser.get("https://cas.hdu.edu.cn/cas/login")
-            print(self.driver)
+            self.driver.get("https://cas.hdu.edu.cn/cas/login")
             self.wait.until(EC.presence_of_element_located((By.ID, "un")))
             self.wait.until(EC.presence_of_element_located((By.ID, "pd")))
             self.wait.until(EC.presence_of_element_located((By.ID, "index_login_btn")))
-            browser.find_element(By.ID, 'un').clear()
-            browser.find_element(By.ID, 'un').send_keys(un)  # 传送帐号
-            browser.find_element(By.ID, 'pd').clear()
-            browser.find_element(By.ID, 'pd').send_keys(pd)  # 输入密码
-            browser.find_element(By.ID, 'index_login_btn').click()
+            self.driver.find_element(By.ID, 'un').clear()
+            self.driver.find_element(By.ID, 'un').send_keys(un)  # 传送帐号
+            self.driver.find_element(By.ID, 'pd').clear()
+            self.driver.find_element(By.ID, 'pd').send_keys(pd)  # 输入密码
+            self.driver.find_element(By.ID, 'index_login_btn').click()
         except Exception as e:
             print(e.__class__.__name__ + "无法访问数字杭电")
             self.wechatNotice(os.environ["SCKEY"], "无法访问数字杭电")
