@@ -30,6 +30,7 @@ class Punch:
 
         try:
             self.driver.get("https://cas.hdu.edu.cn/cas/login")
+            print(browser.title)
             self.wait.until(EC.presence_of_element_located((By.ID, "un")))
             self.wait.until(EC.presence_of_element_located((By.ID, "pd")))
             self.wait.until(EC.presence_of_element_located((By.ID, "index_login_btn")))
@@ -96,7 +97,7 @@ class Punch:
 
     # 打卡失败微信提示
     def wechatNotice(self, SCKey, message):
-        if os.environ["SCKEY"] != '':
+        if os.environ["SCKEY"] != '' and False:
             url = 'https://sctapi.ftqq.com/{0}.send'.format(SCKey)
             data = {
                 'title': message,
