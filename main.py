@@ -15,6 +15,10 @@ from selenium.webdriver.support.wait import WebDriverWait
 class Punch:
 
     def __init__(self):
+        self.un = os.environ["SCHOOL_ID"].strip()  # 学号
+        self.pd = os.environ["PASSWORD"].strip()  # 密码
+        self.SCKey = self.SCKey
+        
         chrome_options = Options()
         chrome_options.add_argument('--headless')
         chrome_options.add_argument('--no-sandbox')
@@ -24,40 +28,35 @@ class Punch:
 
     # 获取本地 SESSIONID
     def login(self):
-        browser = self.driver
-        un = os.environ["SCHOOL_ID"].strip()  # 学号
-        pd = os.environ["PASSWORD"].strip()  # 密码
-
         try:
             self.driver.get("https://cas.hdu.edu.cn/cas/login")
-            print(browser.title)
             self.wait.until(EC.presence_of_element_located((By.ID, "un")))
             self.wait.until(EC.presence_of_element_located((By.ID, "pd")))
             self.wait.until(EC.presence_of_element_located((By.ID, "index_login_btn")))
             self.driver.find_element(By.ID, 'un').clear()
-            self.driver.find_element(By.ID, 'un').send_keys(un)  # 传送帐号
+            self.driver.find_element(By.ID, 'un').send_keys(self.un)  # 传送帐号
             self.driver.find_element(By.ID, 'pd').clear()
-            self.driver.find_element(By.ID, 'pd').send_keys(pd)  # 输入密码
+            self.driver.find_element(By.ID, 'pd').send_keys(self.pdd)  # 输入密码
             self.driver.find_element(By.ID, 'index_login_btn').click()
         except Exception as e:
             print(e.__class__.__name__ + "无法访问数字杭电")
-            self.wechatNotice(os.environ["SCKEY"], "无法访问数字杭电")
+            self.wechatNotice("无法访问数字杭电")
             sys.exit(1)
 
         try:
             self.wait.until(EC.presence_of_element_located((By.ID, "errormsg")))
             print("帐号登录失败")
-            self.wechatNotice(os.environ["SCKEY"], un + "帐号登录失败")
+            self.wechatNotice(self.un + "帐号登录失败")
         except TimeoutException as e:
-            browser.get("https://skl.hduhelp.com/passcard.html#/passcard")
+            self.driver.get("https://skl.hduhelp.com/passcard.html#/passcard")
             for retryCnt in range(10):
                 time.sleep(1)
-                sessionId = browser.execute_script("return window.localStorage.getItem('sessionId')")
+                sessionId = self.driver.execute_script("return window.localStorage.getItem('sessionId')")
                 if sessionId is not None and sessionId != '':
                     break
             print(self.send(sessionId))
         finally:
-            browser.quit()
+            self.driver.quit()
 
     # 执行打卡
     def send(self, sessionid):
@@ -86,19 +85,19 @@ class Punch:
                     return "打卡成功"
                 elif retryCnt == 3:
                     print("提交表单失败")
-                    self.wechatNotice(os.environ["SCKEY"], "打卡失败")
+                    self.wechatNotice("打卡失败")
             except Exception as e:
                 if retryCnt < 2:
                     print(e.__class__.__name__ + "打卡失败，正在重试")
                     time.sleep(3)
                 else:
                     print("打卡失败")
-                    self.wechatNotice(os.environ["SCKEY"], "打卡失败")
+                    self.wechatNotice("打卡失败")
 
     # 打卡失败微信提示
-    def wechatNotice(self, SCKey, message):
-        if os.environ["SCKEY"] != '' and False:
-            url = 'https://sctapi.ftqq.com/{0}.send'.format(SCKey)
+    def wechatNotice(self, message):
+        if self.SCKey != '':
+            url = 'https://sctapi.ftqq.com/{0}.send'.format(self.SCKey)
             data = {
                 'title': message,
             }
