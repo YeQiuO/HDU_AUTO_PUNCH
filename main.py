@@ -36,7 +36,7 @@ class Punch:
             self.driver.find_element(By.ID, 'un').clear()
             self.driver.find_element(By.ID, 'un').send_keys(self.un)  # 传送帐号
             self.driver.find_element(By.ID, 'pd').clear()
-            self.driver.find_element(By.ID, 'pd').send_keys(self.pdd)  # 输入密码
+            self.driver.find_element(By.ID, 'pd').send_keys(self.pd)  # 输入密码
             self.driver.find_element(By.ID, 'index_login_btn').click()
         except Exception as e:
             print(e.__class__.__name__ + "无法访问数字杭电")
