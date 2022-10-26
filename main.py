@@ -17,8 +17,8 @@ class Punch:
     def __init__(self):
         self.un = os.environ["SCHOOL_ID"].strip()  # 学号
         self.pd = os.environ["PASSWORD"].strip()  # 密码
-        self.SCKey = self.SCKey
-        
+        self.SCKey = os.environ["SCKEY"]
+
         chrome_options = Options()
         chrome_options.add_argument('--headless')
         chrome_options.add_argument('--no-sandbox')
