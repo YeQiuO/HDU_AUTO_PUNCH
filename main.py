@@ -54,8 +54,9 @@ class Punch:
                 sessionId = self.driver.execute_script("return window.localStorage.getItem('sessionId')")
                 if sessionId is not None and sessionId != '':
                     break
-            print(self.send(sessionId))
+            print("打卡返回 {}".format(self.send(sessionId)))
         finally:
+            print("Finish Process")
             self.driver.quit()
 
     # 执行打卡
@@ -77,6 +78,7 @@ class Punch:
             "currentLiving": 0,
             "last14days": 0
         }
+        print("开始打卡")
 
         for retryCnt in range(3):
             try:
