@@ -29,7 +29,7 @@ class Punch:
     # 获取本地 SESSIONID
     def login(self):
         try:
-            self.driver.get("https://cas.hdu.edu.cn/cas/login")
+            self.driver.get("https://cas.hdu.edu.cn/cas/login?service=https%3A%2F%2Fi.hdu.edu.cn%2Ftp_up%2F")
             self.wait.until(EC.presence_of_element_located((By.ID, "un")))
             self.wait.until(EC.presence_of_element_located((By.ID, "pd")))
             self.wait.until(EC.presence_of_element_located((By.ID, "index_login_btn")))
